@@ -28,21 +28,23 @@
 
 ## 📑 Contents
 
-- [🔥 News](#-news)
-- [🛠️ Setup](#-setup)
-- [💿 Benchmarks](#-benchmarks)
-- [🚀 Models](#-models)
-- [🏋 Evaluation](#-evaluation)
-- [💖 Acknowledgements](#-acknowledgements)
+- [🔥 News](#news)
+- [🛠️ Setup](#setup)
+- [💿 Benchmarks](#benchmarks)
+- [🚀 Models](#models)
+- [🏋 Evaluation](#evaluation)
+- [💖 Acknowledgements](#acknowledgements)
 
 ---
 
+<a id="news"></a>
 ## 🔥 News
 
 - **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** benchmark.
 - **[2026-04]**: 🧑‍💻 The anonymous project page is available at [4open.science](https://anonymous.4open.science/r/WeaveEarth-MM26).
 - **[2026-04]**: 📦 The full codebase for all models and benchmarks will be made public immediately upon paper acceptance.
 
+<a id="setup"></a>
 ## 🛠️ Setup
 
 ### Environment
@@ -62,6 +64,7 @@ pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url https
 pip install -r requirements.txt
 ```
 
+<a id="benchmarks"></a>
 ## 💿 Benchmarks
 
 We evaluate WeaveEarth on three representative UHR RS image understanding benchmarks. Please place the downloaded benchmarks in `/WeaveEarth/datars`.
@@ -72,7 +75,9 @@ We evaluate WeaveEarth on three representative UHR RS image understanding benchm
 | [MME-RealWorld](https://huggingface.co/datasets/yifanzhang114/MME-RealWorld) | Multiple-choice benchmark | 3,738 questions |
 | [XLRS-Bench](https://huggingface.co/datasets/initiacms/XLRS-Bench-lite) | Multiple-choice benchmark | 3,080 questions |
 
+<a id="models"></a>
 ## 🚀 Models
+
 Our method is a training-free framework that can be instantiated on representative open-source VLM backbones without any parameter fine-tuning. Please place the downloaded pre-trained weights in the `/WeaveEarth/ckpts` directory. In addition to the reasoning backbone, please also download the semantic retrieval encoder [`siglip2-so400m-patch16-naflex`](https://huggingface.co/google/siglip2-so400m-patch16-naflex-jax) and place it in the `/WeaveEarth/ckpts` directory.
 <p align="center">
   <img src="./assets/fig2_README.jpg" alt="WeaveEarth Overview." width="900">
@@ -84,6 +89,7 @@ Our method is a training-free framework that can be instantiated on representati
 | [LLaVA-v1.6](https://github.com/haotian-liu/llava) | 7B | Training-Free | 27.60 | 28.04 | 28.87 |
 | [IXC-2.5](https://github.com/InternLM/InternLM-XComposer) | 7B | Training-Free | 32.58 | 39.96 | 34.37 |
 
+<a id="evaluation"></a>
 ## 🏋 Evaluation
 Please run the following command for evaluation:
 ```bash
@@ -92,6 +98,7 @@ python /WeaveEarth/inference_scripts/eval_lrs_vqa_qwen3vl.py   --reasoning_model
 
 After evaluation, please check the specified `save_path` directory (e.g., `/WeaveEarth/output/LRS-VQA-WeaveEarth`) for the saved predictions and summary results.
 
-## 💖  Acknowledgements
+<a id="acknowledgements"></a>
+## 💖 Acknowledgements
 
 We sincerely thank the teams behind [LRS-VQA](https://huggingface.co/datasets/ll-13/LRS-VQA), [MME-RealWorld](https://huggingface.co/datasets/yifanzhang114/MME-RealWorld), and [XLRS-Bench](https://huggingface.co/datasets/initiacms/XLRS-Bench-lite) benchmarks, as well as the open-source VLM backbones [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL), [LLaVA-v1.6](https://github.com/haotian-liu/llava), and [IXC-2.5](https://github.com/InternLM/InternLM-XComposer), for their excellent work that supported our research! **We also sincerely thank the anonymous reviewers for their thoughtful comments and constructive suggestions.**
