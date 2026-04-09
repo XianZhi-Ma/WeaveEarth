@@ -88,5 +88,4 @@ Please run the following command for evaluation:
 ```bash
 python /WeaveEarth/inference_scripts/eval_lrs_vqa_qwen3vl.py   --reasoning_model_path /WeaveEarth/ckpts/Qwen3-VL-8B-Instruct   --dataset_jsonl_path /WeaveEarth/datars/LRS-VQA/LRS_VQA_merged.jsonl   --dataset_root /WeaveEarth/datars/LRS-VQA   --save_path /WeaveEarth/output/LRS-VQA-WeaveEarth
 ```
-
 After evaluation, please check the specified `save_path` directory (e.g., `/WeaveEarth/output/LRS-VQA-WeaveEarth`) for the saved predictions and summary results.
