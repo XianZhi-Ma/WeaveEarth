@@ -4,7 +4,7 @@
 </h1>
 
 <p align="center">
-  <a href="#">Anonymous Author(s)</a>
+  Anonymous Author(s)
 </p>
 
 
