@@ -40,7 +40,7 @@
 ## 🔥 News
 
 - **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** benchmark.
-- **[2026-04]**: 🧑‍💻 The anonymous project page is available at [4open.science](https://anonymous.4open.science/r/WeaveEarth-MM26).
+- **[2026-04]**: 🧑‍💻 The anonymous project page is available.
 - **[2026-04]**: 📦 The full codebase for all models and benchmarks will be made public immediately upon paper acceptance.
 
 <a id="setup"></a>
@@ -93,5 +93,3 @@ python /WeaveEarth/inference_scripts/eval_lrs_vqa_qwen3vl.py   --reasoning_model
 ```
 
 After evaluation, please check the specified `save_path` directory (e.g., `/WeaveEarth/output/LRS-VQA-WeaveEarth`) for the saved predictions and summary results.
-
-<a id="acknowledgements"></a>
