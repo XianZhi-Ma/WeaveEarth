@@ -17,7 +17,7 @@
 > **Abstract:** *Ultra-High-Resolution (UHR) remote sensing image understanding requires Vision-Language Models (VLMs) to capture both the global scene layout and sparse yet task-critical local details under limited computational budgets. Existing methods mainly follow two paradigms. One is passive perception, which relies on resolution expansion or token compression and may therefore discard fine-grained details. The other is active perception, which depends on multi-round zooming and search, but suffers from high latency, contextual fragmentation, and error accumulation. We argue that a more effective path toward UHR understanding lies not in accessing more, but in organizing better. To this end, we propose WeaveEarth, a training-free framework that reformulates UHR understanding as a problem of structured evidence construction and reasoning under global context constraints. Specifically, WeaveEarth first employs Global-Aware Evidence Construction to select a compact, low-redundancy, and spatially complementary Minimal Support Evidence Set. It then introduces Structured Evidence Reasoning, which weaves local evidence, spatial metadata, and relative topology into a unified reasoning interface, thereby enhancing the VLM's ability to perform global-local joint reasoning. Extensive experiments show that WeaveEarth consistently outperforms strong baselines and existing UHR methods across multiple UHR remote sensing benchmarks and multiple frozen VLM backbones.*
 
 <p align="center">
-  <img width="900" src="assets/fig1_README.jpg" alt="Introduction">
+  <img width="1000" src="assets/fig1_README.jpg" alt="Introduction">
 </p>
 
 <div align="center">
@@ -79,9 +79,6 @@ We evaluate WeaveEarth on three representative UHR RS image understanding benchm
 ## 🚀 Models
 
 Our method is a training-free framework that can be instantiated on representative open-source VLM backbones without any parameter fine-tuning. Please place the downloaded pre-trained weights in the `/WeaveEarth/ckpts` directory. In addition to the reasoning backbone, please also download the semantic retrieval encoder [`siglip2-so400m-patch16-naflex`](https://huggingface.co/google/siglip2-so400m-patch16-naflex-jax) and place it in the `/WeaveEarth/ckpts` directory.
-<p align="center">
-  <img src="./assets/fig2_README.jpg" alt="WeaveEarth Overview." width="900">
-</p>
 
 | Backbone | Parameters | Paradigm | LRS-VQA (%) | MME-RealWorld (%) | XLRS-Bench (%) |
 | :-- | :--: | :--: | --: | --: | --: |
