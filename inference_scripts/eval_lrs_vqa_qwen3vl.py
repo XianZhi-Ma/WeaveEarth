@@ -44,58 +44,6 @@ PILImage.MAX_IMAGE_PIXELS = None
 warnings.simplefilter("ignore", PILImage.DecompressionBombWarning)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--reasoning_model_path", type=str, default="/WeaveEarth/ckpts/Qwen3-VL-8B-Instruct")
-    parser.add_argument(
-        "--attn_implementation",
-        type=str,
-        default="sdpa",
-        choices=["flash_attention_2", "sdpa", "eager"],
-    )
-    parser.add_argument("--dataset_jsonl_path", type=str, default="/WeaveEarth/datars/LRS-VQA/LRS_VQA_merged.jsonl")
-    parser.add_argument("--dataset_root", type=str, default="/WeaveEarth/datars/LRS-VQA")
-    parser.add_argument("--save_path", type=str, default="/WeaveEarth/output/LRS-VQA-routed")
-    parser.add_argument("--max_new_tokens", type=int, default=64)
-    parser.add_argument("--temperature", type=float, default=0.0)
-    parser.add_argument("--do_sample", action="store_true", default=False)
-    parser.add_argument("--resize_size", type=int, default=2048)
-    parser.add_argument("--sample_limit", type=int, default=-1)
-    parser.add_argument("--start_idx", type=int, default=0)
-    parser.add_argument("--end_idx", type=int, default=-1)
-    parser.add_argument("--filter_category", type=str, default="")
-    parser.add_argument("--filter_size_bin", type=str, default="")
-    parser.add_argument("--strict_image_exists", action="store_true", default=False)
-
-    parser.add_argument("--disable_routing", action="store_true", default=False)
-    parser.add_argument("--routing_grid_rows", type=int, default=6)
-    parser.add_argument("--routing_grid_cols", type=int, default=6)
-    parser.add_argument("--routing_overlap_ratio", type=float, default=0.1)
-    parser.add_argument("--router_max_regions", type=int, default=8)
-    parser.add_argument("--neighbor_expand", action="store_true", default=True)
-    parser.add_argument("--no_neighbor_expand", dest="neighbor_expand", action="store_false")
-    parser.add_argument("--use_minimal_support_set", action="store_true", default=True)
-    parser.add_argument("--no_minimal_support_set", dest="use_minimal_support_set", action="store_false")
-    parser.add_argument("--use_structured_metadata", action="store_true", default=True)
-    parser.add_argument("--no_structured_metadata", dest="use_structured_metadata", action="store_false")
-    parser.add_argument("--use_topology_board", action="store_true", default=True)
-    parser.add_argument("--no_topology_board", dest="use_topology_board", action="store_false")
-    parser.add_argument("--support_set_budget", type=int, default=6)
-    parser.add_argument("--support_iou_threshold", type=float, default=0.4)
-    parser.add_argument("--evidence_patch_size", type=int, default=448)
-    parser.add_argument("--router_resize_size", type=int, default=2048)
-
-    parser.add_argument("--use_semantic_support", action="store_true", default=True)
-    parser.add_argument("--no_semantic_support", dest="use_semantic_support", action="store_false")
-    parser.add_argument("--semantic_model_path", type=str, default="/WeaveEarth/ckpts/siglip2-so400m-patch16-naflex")
-    parser.add_argument("--semantic_batch_size", type=int, default=6)
-    parser.add_argument("--semantic_cache_dir", type=str, default="/WeaveEarth/output/LRS-VQA-routed/cache")
-    parser.add_argument("--semantic_score_weight", type=float, default=1.0)
-    parser.add_argument("--semantic_anchor_bonus", type=float, default=0.08)
-    parser.add_argument("--semantic_global_weight", type=float, default=0.35)
-    return parser.parse_args()
-
-
 def load_jsonl(path):
     data = []
     with open(path, "r", encoding="utf-8") as f:
@@ -948,6 +896,58 @@ def source_from_qid(qid):
     if "_" not in qid:
         return "unknown"
     return qid.split("_", 1)[0]
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--reasoning_model_path", type=str, default="/WeaveEarth/ckpts/Qwen3-VL-8B-Instruct")
+    parser.add_argument(
+        "--attn_implementation",
+        type=str,
+        default="sdpa",
+        choices=["flash_attention_2", "sdpa", "eager"],
+    )
+    parser.add_argument("--dataset_jsonl_path", type=str, default="/WeaveEarth/datars/LRS-VQA/LRS_VQA_merged.jsonl")
+    parser.add_argument("--dataset_root", type=str, default="/WeaveEarth/datars/LRS-VQA")
+    parser.add_argument("--save_path", type=str, default="/WeaveEarth/output/LRS-VQA-routed")
+    parser.add_argument("--max_new_tokens", type=int, default=64)
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--do_sample", action="store_true", default=False)
+    parser.add_argument("--resize_size", type=int, default=2048)
+    parser.add_argument("--sample_limit", type=int, default=-1)
+    parser.add_argument("--start_idx", type=int, default=0)
+    parser.add_argument("--end_idx", type=int, default=-1)
+    parser.add_argument("--filter_category", type=str, default="")
+    parser.add_argument("--filter_size_bin", type=str, default="")
+    parser.add_argument("--strict_image_exists", action="store_true", default=False)
+
+    parser.add_argument("--disable_routing", action="store_true", default=False)
+    parser.add_argument("--routing_grid_rows", type=int, default=6)
+    parser.add_argument("--routing_grid_cols", type=int, default=6)
+    parser.add_argument("--routing_overlap_ratio", type=float, default=0.1)
+    parser.add_argument("--router_max_regions", type=int, default=8)
+    parser.add_argument("--neighbor_expand", action="store_true", default=True)
+    parser.add_argument("--no_neighbor_expand", dest="neighbor_expand", action="store_false")
+    parser.add_argument("--use_minimal_support_set", action="store_true", default=True)
+    parser.add_argument("--no_minimal_support_set", dest="use_minimal_support_set", action="store_false")
+    parser.add_argument("--use_structured_metadata", action="store_true", default=True)
+    parser.add_argument("--no_structured_metadata", dest="use_structured_metadata", action="store_false")
+    parser.add_argument("--use_topology_board", action="store_true", default=True)
+    parser.add_argument("--no_topology_board", dest="use_topology_board", action="store_false")
+    parser.add_argument("--support_set_budget", type=int, default=6)
+    parser.add_argument("--support_iou_threshold", type=float, default=0.4)
+    parser.add_argument("--evidence_patch_size", type=int, default=448)
+    parser.add_argument("--router_resize_size", type=int, default=2048)
+
+    parser.add_argument("--use_semantic_support", action="store_true", default=True)
+    parser.add_argument("--no_semantic_support", dest="use_semantic_support", action="store_false")
+    parser.add_argument("--semantic_model_path", type=str, default="/WeaveEarth/ckpts/siglip2-so400m-patch16-naflex")
+    parser.add_argument("--semantic_batch_size", type=int, default=6)
+    parser.add_argument("--semantic_cache_dir", type=str, default="/WeaveEarth/output/LRS-VQA-routed/cache")
+    parser.add_argument("--semantic_score_weight", type=float, default=1.0)
+    parser.add_argument("--semantic_anchor_bonus", type=float, default=0.08)
+    parser.add_argument("--semantic_global_weight", type=float, default=0.35)
+    return parser.parse_args()
 
 
 def main():
