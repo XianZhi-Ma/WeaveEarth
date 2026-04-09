@@ -8,9 +8,6 @@
   Anonymous Author(s)
 </p>
 
-
-**⭐ We sincerely thank the reviewers for their valuable time and careful reading.**
-
 ---
 
 
