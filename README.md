@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="assets/logo.png" alt="WeaveEarth Logo" width="45" style="vertical-align: middle; margin-right: 8px;">
+  <img src="assets/logo.png" alt="WeaveEarth Logo" width="45" style="vertical-align: middle; margin-right: 2px;">
   WeaveEarth: Structured Evidence Construction and Reasoning <br>
   for Training-Free UHR Remote Sensing Understanding
 </h1>
