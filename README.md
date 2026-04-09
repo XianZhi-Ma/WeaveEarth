@@ -33,7 +33,6 @@
 - [💿 Benchmarks](#benchmarks)
 - [🚀 Models](#models)
 - [🏋 Evaluation](#evaluation)
-- [💖 Acknowledgements](#acknowledgements)
 
 ---
 
@@ -96,6 +95,3 @@ python /WeaveEarth/inference_scripts/eval_lrs_vqa_qwen3vl.py   --reasoning_model
 After evaluation, please check the specified `save_path` directory (e.g., `/WeaveEarth/output/LRS-VQA-WeaveEarth`) for the saved predictions and summary results.
 
 <a id="acknowledgements"></a>
-## 💖 Acknowledgements
-
-We sincerely thank the teams behind [LRS-VQA](https://huggingface.co/datasets/ll-13/LRS-VQA), [MME-RealWorld](https://huggingface.co/datasets/yifanzhang114/MME-RealWorld), and [XLRS-Bench](https://huggingface.co/datasets/initiacms/XLRS-Bench-lite) benchmarks, as well as the open-source VLM backbones [Qwen3-VL](https://github.com/QwenLM/Qwen3-VL), [LLaVA-v1.6](https://github.com/haotian-liu/llava), and [IXC-2.5](https://github.com/InternLM/InternLM-XComposer), for their excellent work that supported our research! **We also sincerely thank the anonymous reviewers for their thoughtful comments and constructive suggestions.**
