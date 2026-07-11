@@ -5,7 +5,12 @@
 </h1>
 
 <p align="center">
-  Anonymous Author(s)
+  Xianzhi Ma<sup>1</sup>, Shujun Wang<sup>1</sup>, Xiaohan Li<sup>1</sup>, Hao Liu<sup>1</sup>, Changhua Pei<sup>2</sup>, Jianhui Li<sup>1,*</sup>
+</p>
+
+<p align="center">
+  <sup>1</sup> Institute of Space Earth Science, School of Frontier Sciences, Nanjing University, Suzhou, China<br>
+  <sup>2</sup> Computer Network Information Center, Chinese Academy of Sciences, Beijing, China
 </p>
 
 ---
@@ -36,9 +41,8 @@
 <a id="news"></a>
 ## 🔥 News
 
-- **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** benchmark.
-- **[2026-04]**: 🧑‍💻 The anonymous project page is available.
-- **[2026-04]**: 📦 The full codebase for all models and benchmarks will be made public immediately upon paper acceptance.
+- **[2026-07]**: 🎉 WeaveEarth is accepted by **ACM Multimedia 2026**!
+- **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** benchmark. Other evaluation scripts are coming soon.
 
 <a id="setup"></a>
 ## 🛠️ Setup
