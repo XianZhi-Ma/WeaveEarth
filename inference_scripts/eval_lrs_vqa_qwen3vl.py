@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import string
@@ -189,6 +190,10 @@ def resize_long_side(image, target_long_side):
     return image.resize((new_w, new_h), PILImage.BILINEAR)
 
 
+def sanitize_rel_pos(text):
+    return str(text).replace("_", " ")
+
+
 def relative_position_from_indices(row, col, rows, cols):
     if row <= rows // 3:
         v = "top"
@@ -322,14 +327,12 @@ def select_minimal_support_set(candidate_regions, support_set_budget, support_io
     if not candidate_regions:
         return []
     budget = max(1, int(support_set_budget))
-
-    # MSES is constructed by greedy optimization over the whole candidate pool.
-    # Anchors receive only a mild preference, so K anchors cannot pre-fill B slots.
-    selected = []
-    selected_ids = set()
-    selected_rows = set()
-    selected_cols = set()
-
+    anchors = [r for r in candidate_regions if r.get("is_anchor", False)]
+    anchors.sort(key=lambda r: (r.get("router_rank", 10**9), r["row"], r["col"]))
+    selected = anchors[:budget]
+    selected_ids = {r["id"] for r in selected}
+    selected_rows = {r["row"] for r in selected}
+    selected_cols = {r["col"] for r in selected}
     while len(selected) < budget:
         best_region = None
         best_key = None
@@ -343,16 +346,7 @@ def select_minimal_support_set(candidate_regions, support_set_budget, support_io
             semantic_score = float(region.get("semantic_score", 0.0))
             anchor_term = anchor_bonus if region.get("is_anchor", False) else 0.0
             score = semantic_score_weight * semantic_score + anchor_term + 2.5 * (new_row_gain + new_col_gain) - 2.0 * overlap_penalty - max_iou
-            key = (
-                score,
-                semantic_score,
-                -max_iou,
-                -region.get("retrieval_rank", 10**9),
-                -region.get("router_rank", 10**9),
-                -region["neighbor_distance"],
-                -region["row"],
-                -region["col"],
-            )
+            key = (score, semantic_score, -max_iou, -region["neighbor_distance"], -region["row"], -region["col"])
             if best_key is None or key > best_key:
                 best_key = key
                 best_region = region
@@ -630,6 +624,32 @@ def build_router_prompt(question, category, max_regions, region_metadata_text):
     )
 
 
+def build_evidence_board(selected_regions, patch_size):
+    if not selected_regions:
+        raise ValueError("selected_regions must not be empty")
+    n = len(selected_regions)
+    cols = min(3, max(1, math.ceil(math.sqrt(n))))
+    rows = math.ceil(n / cols)
+    padding = 8
+    label_h = 24
+    board_w = cols * patch_size + (cols + 1) * padding
+    board_h = rows * (patch_size + label_h) + (rows + 1) * padding
+    board = PILImage.new("RGB", (board_w, board_h), color=(245, 245, 245))
+    draw = ImageDraw.Draw(board)
+    font = ImageFont.load_default()
+    for idx, region in enumerate(selected_regions):
+        row = idx // cols
+        col = idx % cols
+        x = padding + col * (patch_size + padding)
+        y = padding + row * (patch_size + label_h + padding)
+        patch = region["image"].resize((patch_size, patch_size), PILImage.BILINEAR)
+        board.paste(patch, (x, y + label_h))
+        label = f"{region['id']} | {sanitize_rel_pos(region['relative_position'])}"
+        draw.rectangle((x, y, x + patch_size, y + label_h), fill=(25, 25, 25))
+        draw.text((x + 6, y + 6), label, fill=(255, 255, 255), font=font)
+    return board
+
+
 def build_topology_preserving_board(selected_regions, patch_size):
     if not selected_regions:
         raise ValueError("selected_regions must not be empty")
@@ -669,8 +689,15 @@ def build_topology_preserving_board(selected_regions, patch_size):
     return board, board_layout
 
 
-def build_final_prompt(question, category, selected_regions):
-    region_text = format_structured_region_text(selected_regions)
+def build_final_prompt(question, category, selected_regions, use_structured_metadata=True):
+    if use_structured_metadata:
+        region_text = format_structured_region_text(selected_regions)
+    else:
+        lines = []
+        for region in selected_regions:
+            x1, y1, x2, y2 = region["bbox"]
+            lines.append(f"{region['id']}: position={sanitize_rel_pos(region['relative_position'])}, bbox=[{x1},{y1},{x2},{y2}]")
+        region_text = "\n".join(lines)
     return (
         "Answer the question about the remote sensing image.\n"
         "You are given two images:\n"
@@ -758,6 +785,7 @@ def infer_one(processor, model, semantic_encoder, image_path, question, category
 
     selected_ids = selected_ids[:max_regions]
     expanded_ids = expand_neighbors(selected_ids, regions, args.routing_grid_rows, args.routing_grid_cols, args.neighbor_expand)
+    expanded_ids = expanded_ids[: max(max_regions + 2, args.support_set_budget + 4)]
 
     router_rank_map = {region_id: rank for rank, region_id in enumerate(selected_ids)}
     region_rank_fallback = len(router_rank_map) + 10
@@ -776,13 +804,16 @@ def infer_one(processor, model, semantic_encoder, image_path, question, category
 
     candidate_id_set = set(expanded_ids)
     candidate_regions = [r for r in enriched_all_regions if r["id"] in candidate_id_set]
-    support_ids = select_minimal_support_set(
-        candidate_regions=candidate_regions,
-        support_set_budget=args.support_set_budget,
-        support_iou_threshold=args.support_iou_threshold,
-        semantic_score_weight=args.semantic_score_weight,
-        anchor_bonus=args.semantic_anchor_bonus,
-    )
+    if args.use_minimal_support_set:
+        support_ids = select_minimal_support_set(
+            candidate_regions=candidate_regions,
+            support_set_budget=args.support_set_budget,
+            support_iou_threshold=args.support_iou_threshold,
+            semantic_score_weight=args.semantic_score_weight,
+            anchor_bonus=args.semantic_anchor_bonus,
+        )
+    else:
+        support_ids = [r["id"] for r in candidate_regions[: max(1, args.support_set_budget)]]
 
     if not support_ids:
         support_ids = selected_ids[:1] if selected_ids else [regions[len(regions) // 2]["id"]]
@@ -799,9 +830,13 @@ def infer_one(processor, model, semantic_encoder, image_path, question, category
     support_id_set = set(support_ids)
     support_regions = crop_regions(image, [r for r in enriched_all_regions if r["id"] in support_id_set])
     support_regions.sort(key=lambda x: (x["row"], x["col"]))
-    evidence_board, board_layout = build_topology_preserving_board(support_regions, args.evidence_patch_size)
+    if args.use_topology_board:
+        evidence_board, board_layout = build_topology_preserving_board(support_regions, args.evidence_patch_size)
+    else:
+        evidence_board = build_evidence_board(support_regions, args.evidence_patch_size)
+        board_layout = {"type": "sequential_grid", "grid_rows": None, "grid_cols": None, "placements": []}
 
-    final_prompt = build_final_prompt(question, category, support_regions)
+    final_prompt = build_final_prompt(question, category, support_regions, use_structured_metadata=args.use_structured_metadata)
     raw_output = call_qwen(processor, model, [plain_thumb, evidence_board], final_prompt, gen_kwargs)
 
     routing_info.update(
@@ -825,9 +860,9 @@ def infer_one(processor, model, semantic_encoder, image_path, question, category
             "grid_rows": args.routing_grid_rows,
             "grid_cols": args.routing_grid_cols,
             "neighbor_expand": args.neighbor_expand,
-            "use_minimal_support_set": True,
-            "use_structured_metadata": True,
-            "use_topology_board": True,
+            "use_minimal_support_set": args.use_minimal_support_set,
+            "use_structured_metadata": args.use_structured_metadata,
+            "use_topology_board": args.use_topology_board,
         }
     )
     return raw_output, routing_info
@@ -893,6 +928,12 @@ def parse_args():
     parser.add_argument("--router_max_regions", type=int, default=8)
     parser.add_argument("--neighbor_expand", action="store_true", default=True)
     parser.add_argument("--no_neighbor_expand", dest="neighbor_expand", action="store_false")
+    parser.add_argument("--use_minimal_support_set", action="store_true", default=True)
+    parser.add_argument("--no_minimal_support_set", dest="use_minimal_support_set", action="store_false")
+    parser.add_argument("--use_structured_metadata", action="store_true", default=True)
+    parser.add_argument("--no_structured_metadata", dest="use_structured_metadata", action="store_false")
+    parser.add_argument("--use_topology_board", action="store_true", default=True)
+    parser.add_argument("--no_topology_board", dest="use_topology_board", action="store_false")
     parser.add_argument("--support_set_budget", type=int, default=6)
     parser.add_argument("--support_iou_threshold", type=float, default=0.4)
     parser.add_argument("--evidence_patch_size", type=int, default=448)
@@ -1057,9 +1098,9 @@ def main():
         "routing_overlap_ratio": args.routing_overlap_ratio,
         "router_max_regions": args.router_max_regions,
         "neighbor_expand": args.neighbor_expand,
-        "use_minimal_support_set": True,
-        "use_structured_metadata": True,
-        "use_topology_board": True,
+        "use_minimal_support_set": args.use_minimal_support_set,
+        "use_structured_metadata": args.use_structured_metadata,
+        "use_topology_board": args.use_topology_board,
         "support_set_budget": args.support_set_budget,
         "support_iou_threshold": args.support_iou_threshold,
         "use_semantic_support": args.use_semantic_support,
@@ -1102,3 +1143,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
