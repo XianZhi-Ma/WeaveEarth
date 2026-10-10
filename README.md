@@ -42,7 +42,7 @@
 ## 🔥 News
 
 - **[2026-07]**: 🎉 WeaveEarth is accepted by **ACM Multimedia 2026**!
-- **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** benchmark. Other evaluation scripts are coming soon.
+- **[2026-04]**: ⏳ We have released the initial evaluation script for **Qwen3-VL** on the **LRS-VQA** and **MME-RealWorld** benchmarks.
 
 <a id="setup"></a>
 ## 🛠️ Setup
